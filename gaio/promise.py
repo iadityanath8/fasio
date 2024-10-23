@@ -1,4 +1,4 @@
-from eventloop import get_event_loop, Event, State
+from .eventloop import get_event_loop, Event, State
 
 
 class Promise:
@@ -43,3 +43,4 @@ class Promise:
 
 
 
+__all__ = ['Promise']

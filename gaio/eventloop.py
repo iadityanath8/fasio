@@ -2,7 +2,7 @@ import heapq
 from collections import deque
 import time
 from enum import Enum
-from reactors import BaseSelectReactor, Reactor
+from .reactors import BaseSelectReactor, Reactor
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import os
 import socket
@@ -12,7 +12,7 @@ _MAX_PROCESS_COUNT = os.cpu_count()
 
 class Awaitable:
     def __await__(self):
-        yield
+        yield self 
 
 
 def kernel_switch():
@@ -34,6 +34,18 @@ class Event:
         
     def done(self) -> bool:
         return self.__setter
+
+
+    def __repr__(self):
+        
+        if self.__state == State.PENDING:
+            return f"<Event state={self.__state}> at {hex(id(self))}"
+
+        elif self.__state == State.FINISHED:
+            return f"<Event state={self.__state} Done>"
+        
+        else:
+            return f"<Event state={self.__state} at {hex(id(self))}>"
 
     def __await__(self):
         
@@ -151,6 +163,16 @@ class EventLoop:
     def write_wait(self, fileno, task):
         self._io_reactor.register_writers(fileno, task)
 
+
+    """  Defualt and a fast policy for handling cooperative multitasking where ready is prioritized first then subsequently 
+
+        Sleeping and IO tasks are  handled equally 
+        This is same like the round robin scheduling where each tasks are executed equally but here it levarages the cooperative 
+        scheduling mechainism ny which a users decides when the eventloop should prooriize some task or run another task 
+
+        !!!!! Not similar to round robin but only handles another task only when users calls await with a non-blocking calls !!!!
+        
+    """
     def run_policy(self):
 
         while any([self.__readyTask, self.__sleepingTask, self._io_reactor]):
@@ -238,5 +260,8 @@ def run_in_process(func, *args):
 
 
 """ Importing the Promise downward so that we can make it avoid circular dependency  """
-from promise import Promise
+from gaio.promise import Promise
 
+
+
+__all__ = ['get_event_loop', 'spawn', 'run_in_process', 'run_in_thread','sleep', 'start', 'spawn', 'Event']
