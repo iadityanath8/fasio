@@ -1,14 +1,14 @@
-<img src="gaio.webp" alt="My Project Logo" style="width: 150px; height: auto; border: 2px solid #000; border-radius: 100%;"/>
+<img src="fasio.webp" alt="My Project Logo" style="width: 150px; height: auto; border: 2px solid #000; border-radius: 100%;"/>
 
 
-## Gaio  
+## fasio  
 A Truly Asynchronous Library for Coroutine Scheduling
 
 ---
 
 ## Overview
 
-**Gaio** is an advanced asynchronous I/O library designed to simplify the development of high-performance network applications. It leverages the power of coroutines to provide a truly asynchronous programming model, allowing you to manage tasks efficiently without blocking operations. With Gaio, you can create responsive applications that scale effortlessly.
+**fasio** is an advanced asynchronous I/O library designed to simplify the development of high-performance network applications. It leverages the power of coroutines to provide a truly asynchronous programming model, allowing you to manage tasks efficiently without blocking operations. With fasio, you can create responsive applications that scale effortlessly.
 
 ### Key Features
 
@@ -22,22 +22,22 @@ A Truly Asynchronous Library for Coroutine Scheduling
 
 ## Installation
 
-To install Gaio, use pip:
+To install fasio, use pip:
 
 ```bash
-pip install gaio
+pip install fasio
 ```
 
 ---
 
 ## Usage
 
-Gaio is designed for ease of use. Below is a simple example of how to create a basic TCP echo server using Gaio's features.
+fasio is designed for ease of use. Below is a simple example of how to create a basic TCP echo server using fasio's features.
 
 ### Example: Asynchronous TCP Echo Server
 
 ```python
-from gaio import start, spawn, socket
+from fasio import start, spawn, socket
 
 async def handle_client(client):
     while True:
@@ -64,13 +64,13 @@ start(main())
 
 ### Explanation
 
-In this example, we create a TCP server that listens on `localhost` at port `8080`. When a client connects, a new coroutine is spawned to handle the client’s requests. The server echoes back any data received, demonstrating Gaio's capabilities for handling asynchronous socket operations.
+In this example, we create a TCP server that listens on `localhost` at port `8080`. When a client connects, a new coroutine is spawned to handle the client’s requests. The server echoes back any data received, demonstrating fasio's capabilities for handling asynchronous socket operations.
 
 ---
 
 ## Contributing
 
-Contributions to Gaio are welcome! If you’d like to help improve the library, please fork the repository and submit a pull request. Feel free to report issues or request features through the issue tracker.
+Contributions to fasio are welcome! If you’d like to help improve the library, please fork the repository and submit a pull request. Feel free to report issues or request features through the issue tracker.
 
 ### How to Contribute
 
@@ -83,7 +83,7 @@ Contributions to Gaio are welcome! If you’d like to help improve the library, 
 
 ## License
 
-Gaio is released under the MIT License. See the [LICENSE](LICENSE) file for more details.
+fasio is released under the MIT License. See the [LICENSE](LICENSE) file for more details.
 
 ---
 
@@ -93,4 +93,4 @@ For any questions or feedback, please reach out via [iadityanath8@gmail.com](mai
 
 ---
 
-With Gaio, harness the power of asynchronous programming to create efficient, high-performance applications. Start building today and explore the possibilities!
+With fasio, harness the power of asynchronous programming to create efficient, high-performance applications. Start building today and explore the possibilities!
