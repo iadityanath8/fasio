@@ -1,4 +1,4 @@
-from gaio import eventloop
+from fasio import eventloop
 
 
 

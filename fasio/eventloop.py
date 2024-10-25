@@ -14,6 +14,11 @@ class Awaitable:
     def __await__(self):
         yield self 
 
+class InvalidStateException(Exception):
+    """Raised when the event or queue is in an invalid state."""
+    def __init__(self, message="The operation cannot proceed due to an invalid state."):
+        super().__init__(message)
+
 
 def kernel_switch():
     return Awaitable()
@@ -24,17 +29,26 @@ class State(Enum):
     CANCELLED = 'CANCELLED'
     FINISHED = 'FINISHED'
 
+
+"""
+  !!!!  Fail !!!!
+"""
+
 class Event:
 
     def __init__(self):
         self.__setter = False
-        self.__coro_registry = deque()
+        self.__coro_registry = deque()       # storage for waiting corotine 
         self.__state = State.PENDING
         self._loop = get_event_loop()
         
     def done(self) -> bool:
         return self.__setter
 
+
+    @property
+    def state(self):
+        return self.__state
 
     def __repr__(self):
         
@@ -65,6 +79,11 @@ class Event:
             self.__coro_registry.append(self._loop.current)
             self._loop._EventLoop__current = None
             await kernel_switch()
+        
+
+    def reset(self):
+        self.__setter = False
+        self.__state = State.PENDING
 
     def signal(self):
         
@@ -72,11 +91,14 @@ class Event:
             Signal the event for completion of waiting task
         """
 
-        self.__setter = True
+        self.__setter = True    
         self.__state = State.FINISHED
 
         while self.__coro_registry:
             self._loop.call_soon(self.__coro_registry.popleft())
+
+        # if some conditoion is fullfilled put the coroutine for executioin in eventloop
+        self.reset()
 
 class Task:
 
@@ -260,8 +282,8 @@ def run_in_process(func, *args):
 
 
 """ Importing the Promise downward so that we can make it avoid circular dependency  """
-from gaio.promise import Promise
+from fasio.promise import Promise
 
 
 
-__all__ = ['get_event_loop', 'spawn', 'run_in_process', 'run_in_thread','sleep', 'start', 'spawn', 'Event']
+__all__ = ['get_event_loop', 'spawn', 'run_in_process', 'run_in_thread','sleep', 'start', 'spawn', 'Event', 'kernel_switch']
