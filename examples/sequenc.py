@@ -1,61 +1,30 @@
-from fasio import spawn, start, sleep, get_event_loop, kernel_switch, Queue
+import sys
+import os
 
-from collections import deque
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-class AsyncQueue:
-
-    def __init__(self) -> None:
-        self.items = deque()
-        self.waiters = deque()
-        self.loop = get_event_loop()
-
-    async def get(self):
-        if not self.items:
-            self.waiters.append(self.loop._EventLoop__current)
-            self.loop._EventLoop__current = None
-            await kernel_switch()
-
-        return self.items.popleft()
-
-    def put(self, val):
-        self.items.append(val)
-
-        while self.waiters:
-            self.loop.call_soon(self.waiters.popleft())
-
-
-
-q = Queue()
-
-async def runner():
-    await sleep(1)
-    q.put(1)
-    await sleep(1)
-    q.put(-1)
-    q.put(12)
-    q.put(1212)
-"""
-    user context switch kkab karna Blocking 
-
-    whenever wait thereever await
-"""
-
-
-async def cosumer():
-    for i in range(10):
-        print(await q.get())
-
-async def producer():
-    for i in range(10):
-        q.put(i)
-        await sleep(2)
-
+from fasio import spawn, start, sleep, socket
 
 async def main():
-    spawn(cosumer())
-    # print(await q.get())
-    # print(await q.get())
-    spawn(producer())
+    server = socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
+    server.bind(('localhost',3000))
+    server.listen(socket.SOMAXCONN)
 
-# spawn(runner()) 
+    while True:
+        client, addr = await server.accept()
+
+        spawn(handle_client(client))
+
+
+async def handle_client(client):
+    while True:
+        data = await client.recv(111)
+        if not data:
+            client.close()
+            break
+    
+        await client.send(data)
+
+
 start(main())

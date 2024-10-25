@@ -1,3 +1,17 @@
+Metadata-Version: 2.1
+Name: fasio
+Version: 0.1.0
+Summary: A fast asynchronous coroutine executor for asynchronous programming and fast I/O.
+Home-page: https://github.com/iadityanath8/Fasio
+Author: Your Name
+Author-email: your.email@example.com
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: GNU General Public License v2 (GPLv2)
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
 <!-- <img src="fasio.webp" alt="My Project Logo" style="width: 150px; height: auto; border: 2px solid #000; border-radius: 100%;"/> -->
 
 

@@ -1,0 +1,14 @@
+LICENSE
+README.md
+setup.py
+fasio/__init__.py
+fasio/asyncsocket.py
+fasio/eventloop.py
+fasio/file.py
+fasio/promise.py
+fasio/queue.py
+fasio/reactors.py
+fasio.egg-info/PKG-INFO
+fasio.egg-info/SOURCES.txt
+fasio.egg-info/dependency_links.txt
+fasio.egg-info/top_level.txt
