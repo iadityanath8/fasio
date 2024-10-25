@@ -138,7 +138,7 @@ class EventLoop:
         self.__id = 0
         
         """ SOCKET IO POLLING REACTOR  """
-       # self._io_reactor = BaseSelectReactor(self)
+        # self._io_reactor = BaseSelectReactor(self)
         self._io_reactor = Reactor(self)
 
 

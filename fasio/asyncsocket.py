@@ -1,16 +1,16 @@
 import _socket
-# from eventloop import spawn, get_event_loop, kernel_switch
 from .eventloop import spawn, get_event_loop, kernel_switch
 
 
-"""  Right Now Not non-blocking in here  """
+"""  Just a prototypal socket stil most of the works remain the class and object creation and inheritance is overhead in here """
+"""  We will soon make our socket class which will be productionally functional and fast """
 
 
 """
-    Soon will be making this true non blocking socket with edge triggered notiication 
-    specially in the linux kernel 
-"""
 
+    !!! We Recommend u not to use this as of now in any production application because this is still in development !!!
+
+"""
 class socket(_socket.socket):
 
     # Define socket constants as class attributes
@@ -43,6 +43,7 @@ class socket(_socket.socket):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.__loop = get_event_loop()
+        self.setblocking(False)
 
     def bind(self, address):
         """
@@ -63,21 +64,24 @@ class socket(_socket.socket):
         self.__loop._EventLoop__current = None
         await kernel_switch()
 
-        return super().recv(max_bytes, flags)
+        return super().recv(max_bytes)
 
     async def send(self, data, flags=0):
-        self.__loop.write_wait(self, self.__loop.current)
-        self.__loop._EventLoop__current = None
-
-        await kernel_switch()
-
-        return super().send(data, flags)
+        while True:
+            try:
+                return super().send(data, flags)
+            except BlockingIOError:    
+                self.__loop.write_wait(self, self.__loop.current)
+                self.__loop._EventLoop__current = None
+                await kernel_switch()
 
     async def sendto(self, data, address):
-        self.__loop.write_wait(self, self.__loop.current)
-        await kernel_switch()
-
-        return super().sendto(data, address, flags)
+        while True:
+            try:
+                return super().sendto(data, address)
+            except BlockingIOError:
+                self.__loop.write_wait(self, self.__loop.current)
+                await kernel_switch()
 
     def getpeername(self):
         return super().getpeername()
@@ -91,19 +95,22 @@ class socket(_socket.socket):
     async def sendall(self, data, flags = 0):
         total_send = 0
         while total_send < len(data):
-            sent = await self.send(data[total_send:, flags])
+            sent = await self.send(data[total_send:],flags)
             total_send += sent
 
     async def accept(self):
-        self.__loop.read_wait(self, self.__loop.current)
-        self.__loop._EventLoop__current = None
 
-        await kernel_switch()
-
-        client_sock_fd, addr = super()._accept()
-        client_socket = socket(fileno=client_sock_fd)
-
-        return client_socket, addr  # Return the new socket and address
+        while True:
+            try:
+                client_sock_fd, addr = super()._accept()
+                client = socket(fileno=client_sock_fd)           # SOON WOOW GOOD SO MUCH NON BLOCKING WOOW 
+                client.setblocking(False)
+                return client, addr
+            except BlockingIOError:
+                # print("Blockin io ")
+                self.__loop.read_wait(self, self.__loop.current)
+                self.__loop._EventLoop__current = None
+                await kernel_switch()
 
 
     async def __aenter__(self):
@@ -113,5 +120,6 @@ class socket(_socket.socket):
         self.close()
 
 
-    
+
+
 __all__ = ['socket']
