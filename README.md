@@ -1,4 +1,4 @@
-<img src="fasio.webp" alt="My Project Logo" style="width: 150px; height: auto; border: 2px solid #000; border-radius: 100%;"/>
+<img src="fasio.webp" alt="My Project Logo" style="width: 150px; height: auto; border: 20px solid #000; border-radius: 100%;"/>
 
 
 ## fasio  
