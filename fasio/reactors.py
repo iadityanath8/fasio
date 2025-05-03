@@ -1,6 +1,14 @@
 import select
 import selectors 
 
+
+
+"""
+
+!!!!!!!!!!!!!!!       BASESELECTOR CAN BE DEPRECATED       !!!!!!!!!!!!!!!!!!!!!
+
+"""
+
 class BaseSelectReactor:
 
     def __init__(self, loop):

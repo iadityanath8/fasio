@@ -7,6 +7,7 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import os
 import socket
 
+
 _MAX_THREAD_COUNT  = os.cpu_count() ** 2
 _MAX_PROCESS_COUNT = os.cpu_count()
 
@@ -31,7 +32,7 @@ class State(Enum):
 
 
 """
-  !!!!  Fail !!!!
+  !!!! ✅ PATCH: Working Event and its coro_registry can be used any where to hold the asynchronous execution and resume it !!!!
 """
 
 class Event:
@@ -106,6 +107,14 @@ class Task:
         self.__coro = coro
         self.__value = None 
         self.__event = Event()
+        self.__cb    = lambda: None
+    
+    def done_callback(self,cb):
+        self.__cb = cb 
+
+    @property
+    def done(self):
+        return self.__event.done() 
     
     def __await__(self):
         if self.__event.done() is False:
@@ -125,31 +134,31 @@ class Task:
         except StopIteration as e:
             self.__value = e.value
             self.__event.signal()
-
+            self.__cb()
 
 class EventLoop:
 
     __instance = None 
     def __init__(self):
-        self.__readyTask = deque()
-        self.__sleepingTask = [  ]
-        self.__current = None 
+        self.__readyTask    =  deque()
+        self.__sleepingTask =  [  ]
+        self.__current      =  None 
         
-        self.__id = 0
+        self.__id           =  0
         
         """ SOCKET IO POLLING REACTOR  """
         # self._io_reactor = BaseSelectReactor(self)
         self._io_reactor = Reactor(self)
 
 
-        """  Used for offloading the tasks to the external thread or process so that operating system can schedule them 
-             to the different processot at multicore allowing other task to run in eventloop making eventloop non blocking
+        """     Used for offloading the tasks to the external thread or process so that operating system can schedule them 
+                to the different processor at multicore allowing other task to run in eventloop making eventloop non blocking
              
-             !!! Limited number of tasks can be offloaded depending upon the thread and the process of the 
-                Computer
+                !!! Limited number of tasks can be offloaded depending upon the thread and the process of the 
+                 Computer  !!!
         """
 
-        self._ThreadPool = ThreadPoolExecutor(max_workers=_MAX_THREAD_COUNT)
+        self._ThreadPool  = ThreadPoolExecutor(max_workers=_MAX_THREAD_COUNT)
         self._ProcessPool = ProcessPoolExecutor(max_workers=_MAX_PROCESS_COUNT)
 
 
@@ -178,7 +187,7 @@ class EventLoop:
         heapq.heappush(self.__sleepingTask, (deadline, self.__id,task))
    
 
-    """ !!!! Only for socket io  """ 
+    """ !!!! Only for socket io / socket file descriptor !!!! """ 
     def read_wait(self, fileno, task):
         self._io_reactor.register_readers(fileno, task)
 
@@ -190,10 +199,34 @@ class EventLoop:
 
         Sleeping and IO tasks are  handled equally 
         This is same like the round robin scheduling where each tasks are executed equally but here it levarages the cooperative 
-        scheduling mechainism ny which a users decides when the eventloop should prooriize some task or run another task 
+        scheduling mechainism ny which a users decides when the eventloop should prioritize some task or run another task 
 
         !!!!! Not similar to round robin but only handles another task only when users calls await with a non-blocking calls !!!!
         
+    """
+
+    def run_policy(self):
+        while self.__readyTask or self.__sleepingTask or self._io_reactor:
+
+            if not self.__readyTask:
+                if self.__sleepingTask:
+                    deadline, _, _ = self.__sleepingTask[0]
+                    timeout = max(0, deadline - time.time())
+                else:
+                    timeout = None  
+
+                self._io_reactor.poll(timeout)
+
+                now = time.time()  
+                while self.__sleepingTask and now >= self.__sleepingTask[0][0]:
+                    _, _, task = heapq.heappop(self.__sleepingTask)
+                    self.__readyTask.appendleft(task)  
+
+
+            self.__current = self.__readyTask.popleft()
+            self.__current()
+
+
     """
     def run_policy(self):
 
@@ -225,7 +258,8 @@ class EventLoop:
             self.__current = self.__readyTask.popleft()
 
             self.__current()
-
+        """
+    
 def get_event_loop() -> EventLoop:
     return EventLoop.get_instace()
 
@@ -280,10 +314,42 @@ def run_in_process(func, *args):
     return p
 
 
+def gather(*args):
+    v = Queue()
+    
+    def make_callback(task):
+        def callback():
+            v.put(task._Task__value)
+        return callback
+
+    for c in args:
+        t = spawn(c)
+        t.done_callback(make_callback(t))
+
+    return v
+
+
+async def collect(*args):
+    l = []
+    v = Queue()
+
+    def make_callback(task):
+        def callback():
+            v.put(task._Task__value)
+        return callback
+
+    for c in args:
+        t = spawn(c)
+        t.done_callback(make_callback(t))
+    
+    for _ in range(len(args)):
+        l.append(await v.get())
+
+    return l
 
 """ Importing the Promise downward so that we can make it avoid circular dependency  """
 from fasio.promise import Promise
+from .queue import Queue
 
 
-
-__all__ = ['get_event_loop', 'spawn', 'run_in_process', 'run_in_thread','sleep', 'start', 'spawn', 'Event']
+__all__ = ['get_event_loop', 'spawn', 'run_in_process', 'run_in_thread','sleep', 'start', 'spawn', 'Event', 'gather','collect']

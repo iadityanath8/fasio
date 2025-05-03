@@ -1,6 +1,14 @@
+"""
+
+    !!!!!!!!!!!!!!!!!!!!!!!!        THIS IS DEPRECATED SOON A UNIVERSAL 
+                                    QUEUE WILL BE THE DROP IN REPLACEMENT
+                                    FOR THIS                                         !!!!!!!!!!!!!!!!!!!!!!!!
+
+"""
 from .eventloop import Event
 import heapq
 from collections import deque
+import warnings
 
 """
     get, put , __repr__, ___bool__ , empty, get_sync, put_sync 
@@ -29,7 +37,8 @@ class Queue:
     def get_sync(self):
         if not self.items:
             raise QueueEmptyException()
-
+        
+        return self.items.popleft()
     
     async def get(self):
         if not self.items:
@@ -39,7 +48,6 @@ class Queue:
     
     def put_sync(self, val):
         self.items.append(val)
-
 
     def put(self,val):
         self.items.append(val)        
@@ -96,8 +104,14 @@ class Deque:
         self._event.signal()
 
 
+
 class Heap:
     def __init__(self) -> None:
+        warnings.warn(
+            "Heap is deprecated.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         self.items = []
         self._event = Event()
 

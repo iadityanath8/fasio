@@ -14,17 +14,18 @@ async def main():
     while True:
         client, addr = await server.accept()
 
-        spawn(handle_client(client))
+        spawn(handle_client(client)) # 1 -> cient
 
 
 async def handle_client(client):
     while True:
-        data = await client.recv(111)
+        data = await client.recv(1111)
         if not data:
             client.close()
             break
-    
-        await client.send(data)
+        
+        msg =  data
+        await client.send(msg)
 
 
 start(main())

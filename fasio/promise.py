@@ -38,6 +38,8 @@ class Promise:
     def set_value(self, val):
         self.__value = val
 
+        self.__done = True
+        self.__state = State.FINISHED
         self._event.signal()
 
 
