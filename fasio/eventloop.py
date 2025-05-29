@@ -352,4 +352,4 @@ from fasio.promise import Promise
 from .queue import Queue
 
 
-__all__ = ['get_event_loop', 'spawn', 'run_in_process', 'run_in_thread','sleep', 'start', 'spawn', 'Event', 'gather','collect']
+__all__ = ['get_event_loop', 'spawn', 'run_in_thread', 'run_in_process','sleep', 'start', 'spawn', 'Event', 'gather','collect']

@@ -1,6 +1,6 @@
 import select
 import selectors 
-
+import time
 
 
 """
@@ -111,18 +111,24 @@ class Reactor:
         self.tasks_to_deregister.append(fileno)
 
     def poll(self, timeout):
-        events = self.selector.select(timeout)
 
-        for key, mask in events:
-            task = key.data
+        """
+            Windows based trick used to use selectors without passing any fds 
+            OK in linux and mac but not in WINDOWS Selectors 
+        """
+        if bool(self.selector.get_map()):
+            events = self.selector.select(timeout)
 
-            self._loop.call_soon(task)
+            for key, mask in events:
+                task = key.data
 
-            self.deregister(key.fileobj)
+                self._loop.call_soon(task)
 
-        # Perform batch deregistration after processing events
-        for fileno in self.tasks_to_deregister:
-            self.selector.unregister(fileno)
-        self.tasks_to_deregister.clear()
+                self.deregister(key.fileobj)
 
+            for fileno in self.tasks_to_deregister:
+                self.selector.unregister(fileno)
+            self.tasks_to_deregister.clear()
+        else:
+            time.sleep(timeout)
 __all__ = [" "]

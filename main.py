@@ -1,22 +1,23 @@
-from fasio import spawn, start, sleep, gather, collect
+from fasio import start,run_in_thread, spawn
+import time
+
+def a():
+    i =0
+    for i in range(2): 
+        time.sleep(1)        
+        i += 1
+    return i
 
 
-async def f():
-    await sleep(1)
-    print("Billu has")
-    return 1
+async def do_print():
+    for i in range(10):
+        print(i)
 
-async def g():
-    print("Meow Meow")
-    return 2
 
-async def p():
-    for _ in range(3):
-        await sleep(0.4)
-    return 12
+async def main():
+    p = run_in_thread(a)
+    spawn(do_print())
+    print(await p)
 
-async def main():   
-    c = await collect(f(),g(),p())
-    print(c)
 
 start(main())
