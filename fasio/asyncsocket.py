@@ -1,4 +1,7 @@
-import _socket
+"""
+    sockets need deprecation use socket instead 
+"""
+import _socket   
 from .eventloop import spawn, get_event_loop, kernel_switch
 
 class socket:
